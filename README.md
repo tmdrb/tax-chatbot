@@ -1,41 +1,42 @@
-# tax-chatbot
+# 소득세법 기반 RAG(Chatbot) 구축
 
-LangChain 기반 RAG 파이프라인으로 소득세법 질의응답 챗봇
+본 프로젝트는 **소득세법.docx** 문서를 기반으로 임베딩 및 검색 기능을 구축하여, LangChain과 Pinecone을 활용한 **질의응답 챗봇**을 구현한 사례입니다.
 
-### 소득세법.docx 다운로드 및 표 데이터 .md 양식으로 전처리
+---
 
-### LangChain과 Pinecone 활용한 RAG 구성
-- **데이터 생성 및 분할**: `Docx2txtLoader`와 `RecursiveCharacterTextSplitter`를 사용하여 문서를 로드하고 chunk로 분할합니다.
-- **벡터 데이터베이스 변경**: 기존 Chroma 벡터 데이터베이스를 Pinecone으로 변경하여 문서 임베딩을 저장하고 검색합니다.
-- **질의 응답 생성**: 저장된 데이터를 유사도 검색을 통해 검색하고, `RetrievalQA` 체인을 사용하여 질문에 대한 답변을 생성합니다.
+## 📌 프로젝트 개요
+- **목표**: 사용자가 소득세법 관련 질문을 했을 때, 관련 조항을 신속하고 정확하게 검색하고 설명하는 챗봇 구축  
+- **핵심 기술**: LangChain, Pinecone, Upstage Embeddings  
 
-### 3.3 LangChain 없이 구성하는 RAG의 불편함
-- **데이터 생성 및 분할**: `python-docx`와 `tiktoken`을 사용하여 문서를 chunk로 분할하고, 텍스트 데이터를 생성합니다.
-- **데이터 임베딩 및 저장**: OpenAI의 임베딩 모델을 사용하여 chunk를 벡터화하고, `Chroma`를 통해 벡터화된 데이터를 데이터베이스에 저장합니다.
-- **질의 응답 생성**: 저장된 데이터를 유사도 검색을 통해 검색하고, OpenAI의 언어 모델을 사용하여 질문에 대한 답변을 생성합니다.
+---
 
-### 3.4 LangChain을 활용한 Vector Database 변경 (Chroma ➡️ Pinecone)
+## 📂 데이터 로드 및 분할
+- **Docx2txtLoader**를 활용하여 `소득세법.docx` 문서를 로드  
+- **RecursiveCharacterTextSplitter**를 사용하여 텍스트를 **Chunk 단위**로 분할 → 검색 효율성을 향상  
 
-- **데이터 생성 및 분할**: `Docx2txtLoader`와 `RecursiveCharacterTextSplitter`를 사용하여 문서를 로드하고 chunk로 분할합니다.
-- **벡터 데이터베이스 변경**: 기존 Chroma 벡터 데이터베이스를 Pinecone으로 변경하여 문서 임베딩을 저장하고 검색합니다.
-- **질의 응답 생성**: `RetrievalQA` 체인을 사용하여 저장된 벡터 데이터베이스에서 문서를 검색하고, OpenAI의 언어 모델을 통해 질문에 대한 답변을 생성합니다.
+---
 
-### 3.5 Retrieval 효율 개선을 위한 데이터 전처리
+## 🗄️ 벡터 데이터베이스 설정
+- **OpenAI Embedding 모델**을 사용하여 각 Chunk를 벡터화  
+- **Pinecone** DB에 벡터를 저장하여 **고속 검색** 및 **대규모 데이터 확장성** 확보  
 
-- **데이터 전처리 및 분할**: `Docx2txtLoader`와 `RecursiveCharacterTextSplitter`를 사용하여 문서를 로드하고 chunk로 분할합니다.
-- **벡터 데이터베이스 설정**: Pinecone을 사용하여 벡터 데이터베이스를 설정하고, OpenAI 임베딩 모델을 통해 문서 임베딩을 저장합니다.
-- **질의 응답 생성**: `RetrievalQA` 체인을 사용하여 저장된 벡터 데이터베이스에서 문서를 검색하고, OpenAI의 언어 모델을 통해 질문에 대한 답변을 생성합니다.
+---
 
+## 🤖 질의응답 체인 (RetrievalQA)
+- LangChain의 **RetrievalQA** 체인을 활용  
+- 사용자가 입력한 질문을 기반으로 Pinecone DB에서 연관된 Chunk 검색  
+- 검색된 컨텍스트를 OpenAI 모델에 전달 → **자연어 답변 생성**  
 
-### 3.6 Retrieval 효율 개선을 위한 키워드 사전 활용방법
+---
 
-- **데이터 로드 및 분할**: `Docx2txtLoader`와 `RecursiveCharacterTextSplitter`를 사용하여 문서를 로드하고 chunk로 분할합니다.
-- **벡터 데이터베이스 설정**: Pinecone을 사용하여 벡터 데이터베이스를 설정하고, OpenAI 임베딩 모델을 통해 문서 임베딩을 저장합니다.
-- **질의 응답 생성**: `RetrievalQA` 체인을 사용하여 저장된 벡터 데이터베이스에서 문서를 검색하고, OpenAI의 언어 모델을 통해 질문에 대한 답변을 생성합니다.
-- **사전 체인의 중요성**: `dictionary_chain`을 사용하여 사용자의 질문을 사전에 정의된 키워드로 수정함으로써, 더 정확한 검색 결과와 답변을 제공합니다.
+## 📘 사전 체인 (dictionary_chain)의 중요성
+- 단순한 질문 → **사전에 정의된 키워드로 변환**  
+- 예시:  
+  - 입력: `"연봉5000만원 직장인의 소득세는 얼마야?"`  
+  - 변환: `"연봉5000만원 거주자의 소득세는 얼마야?"`  
+- 이를 통해 검색 정확도 향상 및 답변 품질 개선
+- 소득세법에는 "거주자의 소득세율표라고 존재" 
 
-### 5.1 LangSmith를 활용한 LLM Evaluation
-- **데이터 생성 및 로드**: `langsmith`를 사용하여 소득세법 관련 질문-답변 쌍을 생성하고, 데이터를 로드합니다.
-- **벡터 데이터베이스 설정**: Pinecone을 사용하여 벡터 데이터베이스를 설정하고, OpenAI 임베딩 모델을 통해 문서 임베딩을 저장합니다.
-- **질의 응답 생성**: `RagBot` 클래스를 사용하여 저장된 벡터 데이터베이스에서 문서를 검색하고, OpenAI의 언어 모델을 통해 질문에 대한 답변을 생성합니다.
-- **평가 및 검증**: `langsmith`의 평가 도구를 사용하여 생성된 답변의 정확성, 유용성, 그리고 환각 여부를 평가합니다.
+---
+
+## ✅ 기대 효과
